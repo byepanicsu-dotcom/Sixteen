@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nexus Server Panel</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Адаптация под цвета темы Telegram */
+        body {
+            background-color: var(--tg-theme-bg-color, #0f172a);
+            color: var(--tg-theme-text-color, #ffffff);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            overflow-x: hidden;
+        }
+        /* Стиль стеклянных панелей (Glassmorphism) */
+        .glass {
+            background: rgba(120, 120, 120, 0.1);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+        /* Анимация нажатия кнопок */
+        .btn-active:active {
+            transform: scale(0.96);
+        }
+    </style>
+</head>
+<body class="p-4 min-h-screen flex flex-col">
+
+    <div class="glass rounded-2xl p-4 mb-6 flex items-center gap-4 mt-2">
+        <div class="w-14 h-14 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-xl font-bold shadow-lg" id="avatarLetter">
+            A
+        </div>
+        <div>
+            <h2 id="userName" class="text-xl font-extrabold tracking-tight">Администратор</h2>
+            <div class="flex items-center gap-1.5 mt-0.5">
+                <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                <p class="text-sm opacity-70">Tecno Server Online</p>
+            </div>
+        </div>
+    </div>
+
+    <h3 class="text-lg font-bold mb-3 opacity-90 px-1">Система</h3>
+    <div class="grid grid-cols-2 gap-3 mb-6">
+        <div class="glass rounded-2xl p-4 flex flex-col items-center text-center">
+            <div class="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center mb-2 text-blue-400">
+                <i class="fa-solid fa-microchip text-lg"></i>
+            </div>
+            <div class="text-xs opacity-60 font-medium mb-1">RAM (ОЗУ)</div>
+            <div class="font-bold text-sm">Отлично</div>
+        </div>
+        <div class="glass rounded-2xl p-4 flex flex-col items-center text-center">
+            <div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center mb-2 text-green-400">
+                <i class="fa-solid fa-battery-three-quarters text-lg"></i>
+            </div>
+            <div class="text-xs opacity-60 font-medium mb-1">Батарея</div>
+            <div class="font-bold text-sm">Питание ок</div>
+        </div>
+        <div class="glass rounded-2xl p-4 flex flex-col items-center text-center col-span-2">
+            <div class="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center mb-2 text-yellow-400">
+                <i class="fa-brands fa-google-drive text-lg"></i>
+            </div>
+            <div class="text-xs opacity-60 font-medium mb-1">Google Диск (5 ТБ)</div>
+            <div class="font-bold text-sm">Синхронизировано</div>
+        </div>
+    </div>
+
+    <h3 class="text-lg font-bold mb-3 opacity-90 px-1">Управление сервером</h3>
+    <div class="flex flex-col gap-3">
+        <button onclick="triggerAction('download')" class="btn-active w-full bg-blue-500 text-white font-bold py-4 px-4 rounded-2xl transition shadow-lg shadow-blue-500/30 flex justify-between items-center">
+            <span class="flex items-center gap-3"><i class="fa-solid fa-cloud-arrow-down text-xl"></i> Загрузить медиа</span>
+            <i class="fa-solid fa-chevron-right opacity-50 text-sm"></i>
+        </button>
+        
+        <button onclick="triggerAction('users')" class="btn-active w-full glass font-bold py-4 px-4 rounded-2xl transition flex justify-between items-center">
+            <span class="flex items-center gap-3"><i class="fa-solid fa-users text-xl text-purple-400"></i> Список доступа</span>
+            <i class="fa-solid fa-chevron-right opacity-50 text-sm"></i>
+        </button>
+
+        <button onclick="Telegram.WebApp.close()" class="btn-active w-full glass mt-4 opacity-70 font-bold py-3 px-4 rounded-xl transition flex justify-center items-center gap-2">
+            <i class="fa-solid fa-xmark"></i> Закрыть панель
+        </button>
+    </div>
+
+    <script>
+        // Инициализация Telegram WebApp
+        const tg = Telegram.WebApp;
+        
+        // Расширяем приложение на весь экран телефона
+        tg.expand();
+        tg.ready();
+
+        // Подхватываем данные пользователя из Телеграма
+        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            const user = tg.initDataUnsafe.user;
+            document.getElementById('userName').innerText = user.first_name;
+            // Ставим первую букву имени на аватарку
+            document.getElementById('avatarLetter').innerText = user.first_name.charAt(0).toUpperCase();
+        }
+
+        // Функция отправки команд обратно в бота
+        function triggerAction(action) {
+            tg.HapticFeedback.impactOccurred('medium'); // Виброотклик
+            
+            // Если мы пока просто тестируем интерфейс:
+            if (action === 'download') {
+                tg.showAlert("Эта кнопка скоро будет открывать меню вставки ссылки!");
+            } else if (action === 'users') {
+                tg.showAlert("Здесь появится управление друзьями.");
+            }
+            
+            // Позже мы будем использовать tg.sendData(action) для связи с Python
+        }
+    </script>
+</body>
+</html>
+
